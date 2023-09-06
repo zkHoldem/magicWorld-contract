@@ -1,10 +1,9 @@
 import { ethers } from "hardhat";
 import { ZKShuffle } from "@zk-shuffle/jssdk";
-import { IShuffleStateManager } from "../types/@poseidon-zkp/poseidon-zk-contracts/contracts/shuffle/IShuffleStateManager";
+import { IShuffleStateManager } from "../types/@zk-shuffle/contracts/contracts/shuffle/IShuffleStateManager";
 import { deploy_shuffle_manager } from "./helper/deploy_shuffle";
 import { MagicWorld } from "../types/artifacts/cache/solpp-generated-contracts";
 import { MagicWorld__factory } from "../types/factories/artifacts/cache/solpp-generated-contracts/MagicWorld__factory";
-import { P0X_DIR } from "@zk-shuffle/jssdk";
 import { resolve } from "path";
 
 async function fullprocess() {
@@ -25,28 +24,18 @@ async function fullprocess() {
   );
 
   // init shuffle context, which packages the ShuffleManager contract
-  const cardConfig = await mw.cardConfig();
-  let encrypt_wasm;
-  let encrypt_zkey;
-  if (cardConfig == 0) {
-    encrypt_wasm = resolve(P0X_DIR, "./wasm/encrypt.wasm.5");
-    encrypt_zkey = resolve(P0X_DIR, "./zkey/encrypt.zkey.5");
-  } else if (cardConfig == 1) {
-    encrypt_wasm = resolve(P0X_DIR, "./wasm/encrypt.wasm.30");
-    encrypt_zkey = resolve(P0X_DIR, "./zkey/encrypt.zkey.30");
-  } else if (cardConfig == 2) {
-    encrypt_wasm = resolve(P0X_DIR, "./wasm/encrypt.wasm");
-    encrypt_zkey = resolve(P0X_DIR, "./zkey/encrypt.zkey");
-  }
+  const encrypt_wasm = resolve("tests/data/encrypt.wasm.30");
+  const encrypt_zkey = resolve("tests/data/encrypt.zkey.30");
+  const decrypt_wasm = resolve("tests/data/decrypt.wasm");
+  const decrypt_zkey = resolve("tests/data/decrypt.zkey");
 
-  console.log(encrypt_wasm, encrypt_zkey);
   // Alice init shuffle
   const aliceShuffle = await ZKShuffle.create(
     shuffle.address,
     Alice,
     await ZKShuffle.generateShuffleSecret(),
-    resolve(P0X_DIR, "./wasm/decrypt.wasm"),
-    resolve(P0X_DIR, "./zkey/decrypt.zkey"),
+    decrypt_wasm,
+    decrypt_zkey,
     encrypt_wasm,
     encrypt_zkey
   );
@@ -56,8 +45,8 @@ async function fullprocess() {
     shuffle.address,
     Bob,
     await ZKShuffle.generateShuffleSecret(),
-    resolve(P0X_DIR, "./wasm/decrypt.wasm"),
-    resolve(P0X_DIR, "./zkey/decrypt.zkey"),
+    decrypt_wasm,
+    decrypt_zkey,
     encrypt_wasm,
     encrypt_zkey
   );
